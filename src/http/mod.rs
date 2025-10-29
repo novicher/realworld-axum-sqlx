@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::Context;
-use axum::{AddExtensionLayer, Router};
+use axum::Router;
 use sqlx::PgPool;
 use std::sync::Arc;
 use tower::ServiceBuilder;
@@ -37,7 +37,7 @@ pub use error::{Error, ResultExt};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-use tower_http::trace::TraceLayer;
+use tower_http::{add_extension::AddExtensionLayer, trace::TraceLayer};
 
 /// The core type through which handler functions can access common API state.
 ///
@@ -86,8 +86,8 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
     //
     // Note that any port below 1024 needs superuser privileges to bind on Linux,
     // so 80 isn't usually used as a default for that reason.
-    axum::Server::bind(&"0.0.0.0:8080".parse()?)
-        .serve(app.into_make_service())
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    axum::serve(listener, app.into_make_service())
         .await
         .context("error running HTTP server")
 }
