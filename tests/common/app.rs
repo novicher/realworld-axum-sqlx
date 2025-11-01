@@ -5,7 +5,7 @@ use std::{
 
 use tokio::time::sleep;
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use rand::Rng;
 
 #[derive(Debug)]
@@ -48,14 +48,7 @@ impl TestApp {
             }
             sleep(Duration::from_millis(300)).await;
         }
-
-
-        println!("Launching application on port {port}");
-
-        Ok(Self {
-            base_url,
-            child,
-        })
+        bail!("Failed to launch app")
     }
 }
 

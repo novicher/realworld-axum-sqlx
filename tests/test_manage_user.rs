@@ -2,7 +2,7 @@ mod common;
 use anyhow::Result;
 use common::db::TestDb;
 use common::app::TestApp;
-use reqwest::Client;
+use reqwest::{Client, header};
 use serde_json::json;
 
 struct TestFixture {
@@ -60,25 +60,28 @@ async fn test_user_create() -> Result<()> {
     assert!(res.status().is_success());
     let json_res: serde_json::Value = res.json().await.unwrap();
     dbg!(&json_res);
-    let token = json_res.get("user").unwrap().get("token").unwrap();
+    let token = json_res["user"]["token"].as_str();
 
-    assert!(token.is_string());
-    dbg!(token);
-
+    assert!(token.is_some());
 
     // GET user
     let url = format!("{}/api/user", app_url);
 
     let res = Client::new()
         .get(url)
-        .header("Authorization", format!("Token {}", token))
+        .header(header::AUTHORIZATION, format!("Token {}", token.unwrap()))
         .send()
         .await?;
 
     assert!(res.status().is_success());
-    let json_res: serde_json::Value = res.json().await.unwrap();
+
+    let json_res: serde_json::Value = res.json().await?;
+    //dbg!(&json_res);
     let user = json_res.get("user").unwrap();
     dbg!(user);
+
+    assert_eq!(user["email"].as_str(), Some("user1@users.com"));
+    assert_eq!(user["username"].as_str(), Some("user1"));
 
 
 
