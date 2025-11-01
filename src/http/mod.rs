@@ -4,6 +4,7 @@ use axum::Router;
 use sqlx::PgPool;
 use std::sync::Arc;
 use tower::ServiceBuilder;
+use axum::routing::get;
 
 // Utility modules.
 
@@ -59,6 +60,9 @@ struct ApiContext {
 }
 
 pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
+
+    let port = config.port.unwrap_or(8080);
+
     // Bootstrapping an API is both more intuitive with Axum than Actix-web but also
     // a bit more confusing at the same time.
     //
@@ -86,7 +90,7 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
     //
     // Note that any port below 1024 needs superuser privileges to bind on Linux,
     // so 80 isn't usually used as a default for that reason.
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
     axum::serve(listener, app.into_make_service())
         .await
         .context("error running HTTP server")
@@ -94,7 +98,9 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
 
 fn api_router() -> Router {
     // This is the order that the modules were authored in.
-    users::router()
+    Router::new()
+        .route("/health", get(|| async { "ok" }))
+        .merge(users::router())
         .merge(profiles::router())
         .merge(articles::router())
 }

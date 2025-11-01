@@ -13,11 +13,11 @@ pub fn router() -> Router {
     // Unlike those in `listing`, these routes are fortunately all self-contained
     Router::new()
         .route(
-            "/api/articles/:slug/comments",
+            "/api/articles/{slug}/comments",
             get(get_article_comments).post(add_comment),
         )
         .route(
-            "/api/articles/:slug/comments/:comment_id",
+            "/api/articles/{slug}/comments/{comment_id}",
             delete(delete_comment),
         )
 }

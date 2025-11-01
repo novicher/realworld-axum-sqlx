@@ -25,11 +25,11 @@ pub fn router() -> Router {
         // `feed_articles` could be private technically, but meh
         .route("/api/articles/feed", get(listing::feed_articles))
         .route(
-            "/api/articles/:slug",
+            "/api/articles/{slug}",
             get(get_article).put(update_article).delete(delete_article),
         )
         .route(
-            "/api/articles/:slug/favorite",
+            "/api/articles/{slug}/favorite",
             post(favorite_article).delete(unfavorite_article),
         )
         // This route isn't technically grouped with articles but it makes sense to include it

@@ -11,9 +11,9 @@ use axum::{Json, Router};
 
 pub fn router() -> Router {
     Router::new()
-        .route("/api/profiles/:username", get(get_user_profile))
+        .route("/api/profiles/{username}", get(get_user_profile))
         .route(
-            "/api/profiles/:username/follow",
+            "/api/profiles/{username}/follow",
             post(follow_user).delete(unfollow_user),
         )
 }
