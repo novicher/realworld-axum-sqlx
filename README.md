@@ -101,7 +101,7 @@ The following command will start version 14 of Postgres (the latest at time of w
 (this command should also work with [Podman], a daemonless FOSS alternative).
 
 ```shell
-$ docker run -d --name postgres-14 -p 5432:5432 -e POSTGRES_PASSWORD={password} postgres:14
+$ docker run -d --name postgres-18 -p 5432:5432 -e POSTGRES_PASSWORD={password} postgres:18
 ```
 
 Set `{password}` to a password of your choosing.
@@ -112,7 +112,7 @@ $ docker ps
 ```
 ```shell
 CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS          PORTS                                       NAMES
-621eb8962016   postgres:14   "docker-entrypoint.s…"   30 seconds ago   Up 30 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres-14
+621eb8962016   postgres:18   "docker-entrypoint.s…"   30 seconds ago   Up 30 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres-18
 ```
 
 [docker-postgres]: https://hub.docker.com/_/postgres

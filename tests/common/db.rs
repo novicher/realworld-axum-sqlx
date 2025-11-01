@@ -15,7 +15,7 @@ pub struct TestDb {
 impl TestDb {
     pub async fn new() -> Result<Self> {
         let port_num = ContainerPort::from(5432);
-        let image = GenericImage::new("postgres", "16-alpine")
+        let image = GenericImage::new("postgres", "18-alpine")
             .with_exposed_port(port_num)
             .with_env_var("POSTGRES_DB", "postgres")
             .with_env_var("POSTGRES_USER", "postgres")
