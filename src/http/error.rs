@@ -74,6 +74,12 @@ pub enum Error {
     /// for security reasons.
     #[error("an internal server error occurred")]
     Anyhow(#[from] anyhow::Error),
+
+    #[error("an error reading json value")]
+    Json(#[from] serde_json::Error),
+
+    #[error("Redis error")]
+    Redis(#[from] redis::RedisError),
 }
 
 impl Error {
@@ -105,7 +111,9 @@ impl Error {
             Self::Forbidden => StatusCode::FORBIDDEN,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::UnprocessableEntity { .. } => StatusCode::UNPROCESSABLE_ENTITY,
-            Self::Sqlx(_) | Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Sqlx(_) | Self::Json(_) | Self::Anyhow(_) | Self::Redis(_) => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
         }
     }
 }
@@ -156,6 +164,10 @@ impl IntoResponse for Error {
                 // TODO: we probably want to use `tracing` instead
                 // so that this gets linked to the HTTP request by `TraceLayer`.
                 log::error!("Generic error: {:?}", e);
+            }
+
+            Self::Redis(ref e) => {
+                log::error!("Redis error: {:?}", e);
             }
 
             // Other errors get mapped normally.

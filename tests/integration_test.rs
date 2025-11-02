@@ -1,7 +1,7 @@
 mod common;
 use anyhow::Result;
-use common::db::TestDb;
 use common::app::TestApp;
+use common::db::TestDb;
 use reqwest::Client;
 
 #[tokio::test]
@@ -25,10 +25,7 @@ async fn test_app_startup_works() -> Result<()> {
     let url = format!("{}/health", app.base_url);
     println!("TARGET: {}", &url);
 
-    let res = Client::new()
-        .get(url)
-        .send()
-        .await?;
+    let res = Client::new().get(url).send().await?;
 
     assert!(res.status().is_success());
 

@@ -17,7 +17,7 @@ pub struct TestApp {
 impl TestApp {
     pub async fn spawn(db_url: &str) -> Result<Self> {
         let port = rand::rng().random_range(8000..9000);
-        let base_url= format!("http://127.0.0.1:{port}");
+        let base_url = format!("http://127.0.0.1:{port}");
 
         dbg!(db_url);
 
@@ -25,9 +25,9 @@ impl TestApp {
         cmd.args(["run", "--bin", "realworld-axum-sqlx"])
             .env("DATABASE_URL", db_url)
             .env("APP_ENV", "test")
-            .env("PORT", port.to_string())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null());
+            .env("PORT", port.to_string());
+        // .stdout(Stdio::null())
+        // .stderr(Stdio::null());
 
         let child = cmd.spawn().expect("Failed to launch application");
 
@@ -53,7 +53,7 @@ impl TestApp {
 }
 
 impl Drop for TestApp {
-    fn drop(&mut self) { 
+    fn drop(&mut self) {
         let _ = self.child.kill();
     }
 }

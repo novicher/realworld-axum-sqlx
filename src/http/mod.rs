@@ -1,10 +1,11 @@
 use crate::config::Config;
 use anyhow::Context;
 use axum::Router;
+use axum::routing::get;
+use deadpool_redis::Pool as RedisPool;
 use sqlx::PgPool;
 use std::sync::Arc;
 use tower::ServiceBuilder;
-use axum::routing::get;
 
 // Utility modules.
 
@@ -57,10 +58,10 @@ use tower_http::{add_extension::AddExtensionLayer, trace::TraceLayer};
 struct ApiContext {
     config: Arc<Config>,
     db: PgPool,
+    redis: RedisPool,
 }
 
-pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
-
+pub async fn serve(config: Config, db: PgPool, redis: RedisPool) -> anyhow::Result<()> {
     let port = config.port.unwrap_or(8080);
 
     // Bootstrapping an API is both more intuitive with Axum than Actix-web but also
@@ -81,6 +82,7 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
             .layer(AddExtensionLayer::new(ApiContext {
                 config: Arc::new(config),
                 db,
+                redis,
             }))
             // Enables logging. Use `RUST_LOG=tower_http=debug`
             .layer(TraceLayer::new_for_http()),
@@ -90,7 +92,9 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
     //
     // Note that any port below 1024 needs superuser privileges to bind on Linux,
     // so 80 isn't usually used as a default for that reason.
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
+        .await
+        .unwrap();
     axum::serve(listener, app.into_make_service())
         .await
         .context("error running HTTP server")

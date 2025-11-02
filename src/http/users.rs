@@ -1,11 +1,12 @@
-use crate::http::{ApiContext, Result};
+use crate::http::{ApiContext, Result, extractor};
 use anyhow::Context;
-use argon2::password_hash::SaltString;
-use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::{SaltString, rand_core::OsRng};
 use argon2::{Argon2, PasswordHash};
 use axum::extract::Extension;
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use deadpool_redis::redis::AsyncTypedCommands;
+use log::info;
 
 use crate::http::error::{Error, ResultExt};
 use crate::http::extractor::AuthUser;
@@ -114,18 +115,29 @@ async fn login_user(
 
     verify_password(req.user.password, user.password_hash).await?;
 
-    Ok(Json(UserBody {
+    let token: String = AuthUser {
+        user_id: user.user_id,
+    }
+    .to_jwt(&ctx);
+
+    let usr: Json<UserBody<User>> = Json(UserBody {
         user: User {
             email: user.email,
-            token: AuthUser {
-                user_id: user.user_id,
-            }
-            .to_jwt(&ctx),
+            token: token,
             username: user.username,
             bio: user.bio,
             image: user.image,
         },
-    }))
+    });
+
+    let mut r_conn = ctx.redis.get().await.map_err(|e| anyhow::Error::msg(e))?;
+    let r_key = user.user_id.to_string();
+    let r_value: String = serde_json::to_string(&usr.0)?;
+    let _ = r_conn
+        .set_ex(r_key, r_value, extractor::session_exp())
+        .await?;
+
+    Ok(usr)
 }
 
 // https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints#get-current-user
@@ -133,6 +145,16 @@ async fn get_current_user(
     auth_user: AuthUser,
     ctx: Extension<ApiContext>,
 ) -> Result<Json<UserBody<User>>> {
+    let mut r_conn = ctx.redis.get().await.map_err(|e| anyhow::Error::msg(e))?;
+    let usr = r_conn.get(auth_user.user_id.to_string()).await?;
+    info!("Optional user in Redis: {:?}", &usr);
+
+    if let Some(u) = usr {
+        info!("Found user in Redis: {:?}", &u);
+        let u: UserBody<User> = serde_json::from_str(&u).unwrap();
+        return Ok(Json(u));
+    }
+
     let user = sqlx::query!(
         r#"select email, username, bio, image from "user" where user_id = $1"#,
         auth_user.user_id

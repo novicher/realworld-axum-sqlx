@@ -13,6 +13,8 @@ use sqlx::postgres::PgPoolOptions;
 use realworld_axum_sqlx::config::Config;
 use realworld_axum_sqlx::http;
 
+use deadpool_redis::{Config as RedisConfig, Runtime};
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // This returns an error if the `.env` file doesn't exist, but that's not what we want
@@ -44,8 +46,12 @@ async fn main() -> anyhow::Result<()> {
     // is migrated correctly on startup
     sqlx::migrate!().run(&db).await?;
 
+    // Redis
+    let redis_cfg = RedisConfig::from_url(&config.redis_url);
+    let redis = redis_cfg.create_pool(Some(Runtime::Tokio1))?;
+
     // Finally, we spin up our API.
-    http::serve(config, db).await?;
+    http::serve(config, db, redis).await?;
 
     Ok(())
 }

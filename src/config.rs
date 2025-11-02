@@ -25,6 +25,11 @@ pub struct Config {
     #[clap(long, env)]
     pub hmac_key: String,
 
+    /// The connection URL to Redis for session management.  
+    /// This is optional and if missing, sessions will not be cached.
+    #[clap(long, env)]
+    pub redis_url: String,
+
     #[clap(long, env)]
     pub port: Option<u16>,
 }

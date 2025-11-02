@@ -1,7 +1,7 @@
 mod common;
 use anyhow::Result;
-use common::db::TestDb;
 use common::app::TestApp;
+use common::db::TestDb;
 use reqwest::{Client, header};
 use serde_json::json;
 
@@ -18,7 +18,6 @@ async fn setup_app() -> Result<TestFixture> {
 
 #[tokio::test]
 async fn test_user_create() -> Result<()> {
-
     let setup = setup_app().await?;
     let app_url = setup.app.base_url.clone();
 
@@ -82,9 +81,6 @@ async fn test_user_create() -> Result<()> {
 
     assert_eq!(user["email"].as_str(), Some("user1@users.com"));
     assert_eq!(user["username"].as_str(), Some("user1"));
-
-
-
 
     return Ok(());
 }

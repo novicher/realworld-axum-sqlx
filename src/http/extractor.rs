@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::http::error::Error;
 use axum::extract::{Extension, FromRequestParts};
 use axum::http::request::Parts;
@@ -38,6 +40,11 @@ struct AuthUserClaims {
     user_id: Uuid,
     /// Standard JWT `exp` claim.
     exp: i64,
+}
+
+pub fn session_exp() -> u64 {
+    let seconds: f64 = DEFAULT_SESSION_LENGTH.as_seconds_f64() * 0.9;
+    Duration::from_secs_f64(seconds).as_secs()
 }
 
 impl AuthUser {
