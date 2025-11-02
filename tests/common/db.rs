@@ -8,7 +8,7 @@ use testcontainers::{
 
 pub struct TestDb {
     pub _conn: String,
-    pub pool: Pool<Postgres>,
+    pub _pool: Pool<Postgres>,
     _container: ContainerAsync<GenericImage>,
 }
 
@@ -33,7 +33,7 @@ impl TestDb {
 
         Ok(Self {
             _conn: uri,
-            pool,
+            _pool: pool,
             _container: container,
         })
     }

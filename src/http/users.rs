@@ -147,10 +147,9 @@ async fn get_current_user(
 ) -> Result<Json<UserBody<User>>> {
     let mut r_conn = ctx.redis.get().await.map_err(|e| anyhow::Error::msg(e))?;
     let usr = r_conn.get(auth_user.user_id.to_string()).await?;
-    info!("Optional user in Redis: {:?}", &usr);
+    dbg!("Optional user in Redis: {:?}", &usr);
 
     if let Some(u) = usr {
-        info!("Found user in Redis: {:?}", &u);
         let u: UserBody<User> = serde_json::from_str(&u).unwrap();
         return Ok(Json(u));
     }

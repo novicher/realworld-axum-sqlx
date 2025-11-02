@@ -7,7 +7,7 @@ use reqwest::Client;
 #[tokio::test]
 async fn test_db_connection_works() -> Result<()> {
     let db = TestDb::new().await?;
-    let res: (i32,) = sqlx::query_as("select 1").fetch_one(&db.pool).await?;
+    let res: (i32,) = sqlx::query_as("select 1").fetch_one(&db._pool).await?;
     assert_eq!(res.0, 1);
     return Ok(());
 }
@@ -15,7 +15,7 @@ async fn test_db_connection_works() -> Result<()> {
 #[tokio::test]
 async fn test_app_startup_works() -> Result<()> {
     let db = TestDb::new().await?;
-    let res: (i32,) = sqlx::query_as("select 1").fetch_one(&db.pool).await?;
+    let res: (i32,) = sqlx::query_as("select 1").fetch_one(&db._pool).await?;
     assert_eq!(res.0, 1);
 
     let app = TestApp::spawn(&db._conn).await?;

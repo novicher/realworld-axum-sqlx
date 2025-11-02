@@ -1,5 +1,5 @@
 use std::{
-    process::{Child, Command},
+    process::{Child, Command, Stdio},
     time::Duration,
 };
 
@@ -25,9 +25,9 @@ impl TestApp {
         cmd.args(["run", "--bin", "realworld-axum-sqlx"])
             .env("DATABASE_URL", db_url)
             .env("APP_ENV", "test")
-            .env("PORT", port.to_string());
-        // .stdout(Stdio::null())
-        // .stderr(Stdio::null());
+            .env("PORT", port.to_string())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
 
         let child = cmd.spawn().expect("Failed to launch application");
 
