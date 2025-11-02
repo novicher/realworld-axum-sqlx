@@ -1,5 +1,5 @@
 use std::{
-    process::{Child, Command, Stdio},
+    process::{Child, Command},
     time::Duration,
 };
 
