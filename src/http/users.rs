@@ -6,7 +6,6 @@ use axum::extract::Extension;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use deadpool_redis::redis::AsyncTypedCommands;
-use log::info;
 
 use crate::http::error::{Error, ResultExt};
 use crate::http::extractor::AuthUser;
